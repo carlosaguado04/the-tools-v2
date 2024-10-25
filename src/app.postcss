@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+@font-face {
+  font-family: 'Hubot Sans';
+  src: url('/Hubot-Sans.woff2') format('woff2');
+  font-weight: 200 900;
+  font-stretch: 75% 200%;
+  font-display: swap;
+}
+
+::selection {
+    background-color: rgb(var(--color-success-500) / 0.3);
+    color: rgb(var(--color-success-500));
+}
+
+::-moz-selection {
+    background-color: rgb(var(--color-success-500) / 0.3);
+    color: rgb(var(--color-success-500));
+}
