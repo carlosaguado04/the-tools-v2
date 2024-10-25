@@ -2,55 +2,20 @@
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { ProgressBar } from '@skeletonlabs/skeleton';
 	import { Upload, File } from 'lucide-svelte';
-	import { onDestroy } from 'svelte';
 
 	const toastStore = getToastStore();
 
 	let isLoading = false;
 	let fileName = '';
-	let progress = 0;
 	let convertedXml: string | null = null;
 	let convertedFileName = '';
 	let fileInput: HTMLInputElement;
-
-	// Progress timer
-	let progressTimer: number;
 
 	interface ImageValidationError {
 		row: number;
 		name: string;
 		message: string;
 	}
-
-	$: if (isLoading) {
-		progressTimer = window.setInterval(() => {
-			// Much slower progression with smaller increments
-			if (progress < 20) {
-				progress += 0.2; // Initial processing
-			} else if (progress < 40) {
-				progress += 0.15; // Reading file
-			} else if (progress < 60) {
-				progress += 0.1; // Converting
-			} else if (progress < 75) {
-				progress += 0.05; // Validating
-			} else if (progress < 85) {
-				progress += 0.02; // Final checks
-			} else if (progress < 95) {
-				progress += 0.01; // Almost done
-			}
-			// Stop at 95% and wait for actual response
-			if (progress >= 95) {
-				progress = 95;
-				window.clearInterval(progressTimer);
-			}
-		}, 200); // Increased interval time
-	} else {
-		progress = 0;
-	}
-
-	onDestroy(() => {
-		if (progressTimer) window.clearInterval(progressTimer);
-	});
 
 	function formatErrorMessage(
 		error: string,
@@ -106,7 +71,6 @@
 		formData.append('file', file);
 
 		isLoading = true;
-		progress = 0;
 
 		try {
 			const response = await fetch(
@@ -155,10 +119,6 @@
 			const newFileName = file.name.split('.')[0] + '.xml';
 			convertedFileName = newFileName;
 
-			// Set progress to 100% when conversion is complete
-			window.clearInterval(progressTimer);
-			progress = 100;
-
 			toastStore.trigger({
 				message: `Congrats! ${newFileName} converted. Want a medal for your download? 🏅`,
 				background: 'variant-filled-success'
@@ -172,10 +132,6 @@
 			});
 			convertedXml = null;
 			convertedFileName = '';
-
-			// Reset progress on error
-			window.clearInterval(progressTimer);
-			progress = 0;
 		} finally {
 			isLoading = false;
 			clearUploadedFile();
@@ -286,7 +242,12 @@
 
 		{#if isLoading}
 			<div class="w-full max-w-md">
-				<ProgressBar value={progress} max={100} class="mt-4" meter="bg-success-500-400-token" />
+				<ProgressBar
+					value={undefined}
+					class="mt-4"
+					meter="bg-success-500-400-token"
+					track="bg-success-500/30"
+				/>
 			</div>
 		{/if}
 	</div>
